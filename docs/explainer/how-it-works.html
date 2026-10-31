@@ -1,0 +1,329 @@
+<!--
+SPDX-FileCopyrightText: syuilo and misskey-project
+SPDX-License-Identifier: AGPL-3.0-only
+-->
+
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Misskey しくみ図鑑</title>
+<meta name="description" content="ノートがみんなに届くまでの Misskey のしくみを、中学生向けにイラストで説明した非公式の解説資料。">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+Rounded+1c:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="explainer.css">
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+<a class="brand" href="how-it-works.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--sea)"/><path d="M8 23V10l4.5 6 3.5-5 3.5 5L24 10v13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Misskey 解説資料</span></a>
+<nav class="pages" aria-label="ページ"><a href="how-it-works.html" aria-current="page">しくみ図鑑</a><a href="code-map.html">コード逆引き</a></nav>
+</div></header>
+
+<header class="cover"><div class="wrap">
+<p class="kicker">MISSKEY · HOW IT WORKS</p>
+<h1>ノートが<em>みんなに届く</em>までの<br>しくみ図鑑</h1>
+<p class="lead">ボタンを押すと、すぐにタイムラインに流れていく Misskey のノート。<br>その裏で何が起きているのか、イラストで見てみよう。</p>
+<p class="basis"><span>misskey 2026.10.1-alpha.0</span><span>develop ブランチ（70ac647fa、2026年10月17日）をもとに作成</span></p>
+<p class="disclaimer">非公式の解説資料です。Misskey の公式資料ではありません。</p>
+<nav class="toc" aria-label="目次"><ol><li><a href="#what"><span class="no">01</span>Misskey ってなに？</a></li><li><a href="#map"><span class="no">02</span>どこで動くの？</a></li><li><a href="#roles"><span class="no">03</span>係の分担</a></li><li><a href="#flow"><span class="no">04</span>ノートが届くまで</a></li><li><a href="#api"><span class="no">05</span>受付窓口</a></li><li><a href="#create"><span class="no">06</span>ノートを作る</a></li><li><a href="#tl"><span class="no">07</span>タイムライン</a></li><li><a href="#stream"><span class="no">08</span>すぐに届く</a></li><li><a href="#fed"><span class="no">09</span>ほかのサーバーへ</a></li><li><a href="#queue"><span class="no">10</span>あとでやる仕事</a></li><li><a href="#tools"><span class="no">11</span>使っている道具</a></li><li><a href="#words"><span class="no">12</span>ことば</a></li></ol></nav>
+</div><svg class="waves" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 75 0 150 30 T 300 30 T 450 30 T 600 30 T 750 30 T 900 30 T 1050 30 T 1200 30 V60 H0Z" fill="currentColor"/></svg></header>
+
+<div class="wrap layout"><aside class="side" aria-label="目次"><p class="sh">もくじ</p><ol><li><a href="#what"><span class="no">01</span><span>Misskey ってなに？</span></a></li><li><a href="#map"><span class="no">02</span><span>どこで動くの？</span></a></li><li><a href="#roles"><span class="no">03</span><span>係の分担</span></a></li><li><a href="#flow"><span class="no">04</span><span>ノートが届くまで</span></a></li><li><a href="#api"><span class="no">05</span><span>受付窓口</span></a></li><li><a href="#create"><span class="no">06</span><span>ノートを作る</span></a></li><li><a href="#tl"><span class="no">07</span><span>タイムライン</span></a></li><li><a href="#stream"><span class="no">08</span><span>すぐに届く</span></a></li><li><a href="#fed"><span class="no">09</span><span>ほかのサーバーへ</span></a></li><li><a href="#queue"><span class="no">10</span><span>あとでやる仕事</span></a></li><li><a href="#tools"><span class="no">11</span><span>使っている道具</span></a></li><li><a href="#words"><span class="no">12</span><span>ことば</span></a></li></ol></aside>
+<main class="content">
+
+<section class="chap" id="what"><h2><span class="no">01</span>Misskey ってなに？</h2>
+<p>Misskey は、短い文章や画像を投稿して、みんなと見せ合う <b>SNS</b> です。投稿のことを <b>ノート</b> と呼びます。</p>
+<p>ふつうの SNS は、1つの会社が1つの大きなサーバーを動かしています。Misskey はちがいます。<b>だれでも自分のサーバーを立てられて</b>、しかも <b>ほかのサーバーの人ともつながれます</b>。この形を「分散型」といいます。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 300" role="img" aria-label="たくさんのサーバーが線でつながっている図">
+<defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<g stroke="var(--ink-soft)" stroke-width="2.5" stroke-dasharray="6 6" fill="none">
+<path d="M250 110 L 440 80"/><path d="M250 130 L 420 220"/><path d="M520 90 L 680 120"/><path d="M500 220 L 680 160"/><path d="M460 120 L 460 190"/>
+</g>
+<g>
+<rect x="110" y="70" width="150" height="100" rx="18" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2.5"/>
+<text x="185" y="112" text-anchor="middle" font-weight="700" font-size="20">サーバー A</text><text x="185" y="142" text-anchor="middle" class="soft" font-size="15">misskey.example</text>
+<rect x="400" y="40" width="130" height="90" rx="18" fill="var(--coral-wash)" stroke="var(--coral)" stroke-width="2.5"/>
+<text x="465" y="80" text-anchor="middle" font-weight="700" font-size="19">サーバー B</text><text x="465" y="108" text-anchor="middle" class="soft" font-size="14">Misskey</text>
+<rect x="390" y="190" width="150" height="90" rx="18" fill="var(--gold-wash)" stroke="var(--gold)" stroke-width="2.5"/>
+<text x="465" y="230" text-anchor="middle" font-weight="700" font-size="19">サーバー C</text><text x="465" y="258" text-anchor="middle" class="soft" font-size="14">Mastodon など</text>
+<rect x="680" y="90" width="150" height="100" rx="18" fill="var(--violet-wash)" stroke="var(--violet)" stroke-width="2.5"/>
+<text x="755" y="132" text-anchor="middle" font-weight="700" font-size="19">サーバー D</text><text x="755" y="160" text-anchor="middle" class="soft" font-size="14">Misskey</text>
+</g>
+<text x="450" y="22" text-anchor="middle" class="mutedt" font-size="14">点線 = ActivityPub という共通のことばでやりとり</text>
+</svg><figcaption>サーバーどうしは ActivityPub という「共通のことば」で話すので、Misskey 以外のサーバーともつながれる</figcaption></figure>
+<div class="point"><span>ポイント</span><ul><li>Misskey は「サーバーのソフト」。1台1台を <b>サーバー</b>（インスタンス）と呼ぶ</li><li>投稿は <b>ノート</b>、反応は <b>リアクション</b>（絵文字）</li><li>ほかのサーバーともつながる <b>分散型</b> の SNS</li></ul></div>
+</section>
+
+<section class="chap" id="map"><h2><span class="no">02</span>どこで動くの？</h2>
+<p>Misskey は、<b>あなたのブラウザ</b>と<b>サーバー</b>の2か所で動きます。サーバーの中にはさらに、データをしまう係がいくつかいます。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 360" role="img" aria-label="ブラウザ、サーバー、データベースなどの位置関係">
+<defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<rect x="20" y="40" width="210" height="280" rx="18" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2.5"/>
+<path d="M20 80 H 230" stroke="var(--line)" stroke-width="2"/><circle cx="44" cy="60" r="6" fill="var(--coral)"/><circle cx="64" cy="60" r="6" fill="var(--gold)"/><circle cx="84" cy="60" r="6" fill="var(--sea)"/>
+<text x="125" y="130" text-anchor="middle" font-weight="700" font-size="20">ブラウザ</text>
+<text x="125" y="160" text-anchor="middle" class="soft" font-size="14">画面を作る</text>
+<rect x="50" y="185" width="150" height="40" rx="10" fill="var(--sea-wash)"/><text x="125" y="211" text-anchor="middle" class="m" font-size="14">frontend (Vue)</text>
+<rect x="50" y="240" width="150" height="40" rx="10" fill="var(--coral-wash)"/><text x="125" y="266" text-anchor="middle" class="m" font-size="14">misskey-js</text>
+<path d="M235 150 H 345" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah2)" marker-start="url(#ah2)"/>
+<text x="290" y="138" text-anchor="middle" font-size="13" class="soft">API (HTTP)</text>
+<path d="M235 250 H 345" stroke="var(--coral)" stroke-width="2.5" marker-end="url(#ah2)" marker-start="url(#ah2)"/>
+<text x="290" y="238" text-anchor="middle" font-size="13" class="soft">WebSocket</text>
+<rect x="350" y="40" width="250" height="280" rx="18" fill="var(--surface)" stroke="var(--sea)" stroke-width="2.5"/>
+<text x="475" y="80" text-anchor="middle" font-weight="700" font-size="20">サーバー</text>
+<text x="475" y="106" text-anchor="middle" class="soft" font-size="14">Node.js で動く backend</text>
+<rect x="380" y="125" width="190" height="40" rx="10" fill="var(--sea-wash)"/><text x="475" y="151" text-anchor="middle" font-size="14">API の受付（Fastify）</text>
+<rect x="380" y="175" width="190" height="40" rx="10" fill="var(--sea-wash)"/><text x="475" y="201" text-anchor="middle" font-size="14">仕事の係（NestJS）</text>
+<rect x="380" y="225" width="190" height="40" rx="10" fill="var(--gold-wash)"/><text x="475" y="251" text-anchor="middle" font-size="14">あとでやる仕事（BullMQ）</text>
+<rect x="380" y="275" width="190" height="34" rx="10" fill="var(--violet-wash)"/><text x="475" y="298" text-anchor="middle" font-size="14">他サーバーとの窓口</text>
+<path d="M605 110 H 680" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah2)"/>
+<path d="M605 190 H 680" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah2)"/>
+<path d="M605 270 H 680" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah2)"/>
+<rect x="685" y="70" width="195" height="74" rx="16" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2"/>
+<text x="782" y="102" text-anchor="middle" font-weight="700" font-size="17">PostgreSQL</text><text x="782" y="126" text-anchor="middle" class="soft" font-size="13">ずっと残す本棚</text>
+<rect x="685" y="154" width="195" height="74" rx="16" fill="var(--coral-wash)" stroke="var(--coral)" stroke-width="2"/>
+<text x="782" y="186" text-anchor="middle" font-weight="700" font-size="17">Redis</text><text x="782" y="210" text-anchor="middle" class="soft" font-size="13">すぐ取り出せるメモ帳</text>
+<rect x="685" y="238" width="195" height="74" rx="16" fill="var(--gold-wash)" stroke="var(--gold)" stroke-width="2"/>
+<text x="782" y="270" text-anchor="middle" font-weight="700" font-size="17">ファイル置き場</text><text x="782" y="294" text-anchor="middle" class="soft" font-size="13">ディスク / S3</text>
+</svg><figcaption>ブラウザは API と WebSocket でサーバーと話す。サーバーはデータを PostgreSQL・Redis・ファイル置き場にしまう</figcaption></figure>
+<div class="grid3">
+<div class="card accent-sea"><span class="tag">PostgreSQL</span><h3>本棚</h3><p>ノート・ユーザー・フォローなど、<b>消えては困るもの</b>を全部しまうデータベース。</p></div>
+<div class="card accent"><span class="tag">Redis</span><h3>メモ帳</h3><p>タイムラインの並びや、係どうしの連絡など、<b>すぐ使うもの</b>を置く。とても速い。</p></div>
+<div class="card accent-gold"><span class="tag">Drive</span><h3>ファイル置き場</h3><p>画像や動画。サーバーのディスクか、S3 のような外部の置き場にしまう。</p></div>
+</div>
+</section>
+
+<section class="chap" id="roles"><h2><span class="no">03</span>係の分担</h2>
+<p>Misskey のソースコードは、<code>packages/</code> の中でいくつかの「係」に分かれています。1つのリポジトリにまとめて入れる、モノレポという形です。</p>
+<div class="grid2">
+<div class="card accent-sea"><span class="tag">packages/backend</span><h3>サーバー係</h3><p>API の受付、ノートの保存、ほかのサーバーとのやりとり。NestJS と TypeORM で作られている。</p></div>
+<div class="card accent"><span class="tag">packages/frontend</span><h3>画面係</h3><p>ブラウザで見える画面。Vue 3 で作られ、Vite でまとめられる。</p></div>
+<div class="card accent-violet"><span class="tag">packages/misskey-js</span><h3>通訳係</h3><p>画面からサーバーの API を呼ぶための道具。型（どんなデータか）は backend から自動で作られる。</p></div>
+<div class="card accent-gold"><span class="tag">packages/sw</span><h3>見張り係</h3><p>Service Worker。ブラウザを閉じていてもプッシュ通知を受け取る。</p></div>
+</div>
+<div class="grid3">
+<div class="card"><span class="tag">frontend-embed</span><p>ほかのサイトにノートを埋めこむための小さな画面。</p></div>
+<div class="card"><span class="tag">frontend-shared</span><p>画面係どうしで共通に使う部品やテーマ。</p></div>
+<div class="card"><span class="tag">i18n</span><p>翻訳。<code>locales/ja-JP.yml</code> がもとになる。</p></div>
+</div>
+</section>
+
+<section class="chap" id="flow"><h2><span class="no">04</span>ノートが届くまで</h2>
+<p>「ノート」ボタンを押してから、フォロワーの画面に表示されるまでを、順番に追いかけてみましょう。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 400" role="img" aria-label="ノートが届くまでの流れ">
+<defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<g font-size="15">
+<rect x="20" y="40" width="160" height="70" rx="14" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2"/><text x="100" y="70" text-anchor="middle" font-weight="700">① 書く</text><text x="100" y="94" text-anchor="middle" class="soft" font-size="13">投稿フォーム</text>
+<rect x="240" y="40" width="160" height="70" rx="14" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2"/><text x="320" y="70" text-anchor="middle" font-weight="700">② 送る</text><text x="320" y="94" text-anchor="middle" class="soft m" font-size="12">/api/notes/create</text>
+<rect x="460" y="40" width="160" height="70" rx="14" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="540" y="70" text-anchor="middle" font-weight="700">③ 受付</text><text x="540" y="94" text-anchor="middle" class="soft" font-size="13">本人？ 書き方OK？</text>
+<rect x="680" y="40" width="200" height="70" rx="14" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="780" y="70" text-anchor="middle" font-weight="700">④ ノートを作る</text><text x="780" y="94" text-anchor="middle" class="soft m" font-size="12">NoteCreateService</text>
+<path d="M180 75 H 236" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah3)"/>
+<path d="M400 75 H 456" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah3)"/>
+<path d="M620 75 H 676" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah3)"/>
+<path d="M780 112 V 170" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah3)"/>
+<rect x="660" y="175" width="220" height="64" rx="14" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2"/><text x="770" y="203" text-anchor="middle" font-weight="700">⑤ 本棚にしまう</text><text x="770" y="226" text-anchor="middle" class="soft" font-size="13">PostgreSQL</text>
+<text x="450" y="200" text-anchor="middle" class="mutedt" font-size="14">ここで「投稿できました」と返事。残りは後ろで続く ↓</text>
+<path d="M770 241 V 270 H 140 V 296" stroke="var(--ink-soft)" stroke-width="2" fill="none" marker-end="url(#ah3)"/>
+<path d="M450 270 V 296" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#ah3)"/>
+<path d="M770 270 V 296" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#ah3)"/>
+<rect x="30" y="300" width="220" height="80" rx="14" fill="var(--coral-wash)" stroke="var(--coral)" stroke-width="2"/><text x="140" y="332" text-anchor="middle" font-weight="700">⑥ タイムラインに並べる</text><text x="140" y="358" text-anchor="middle" class="soft" font-size="13">Redis のリスト</text>
+<rect x="340" y="300" width="220" height="80" rx="14" fill="var(--coral-wash)" stroke="var(--coral)" stroke-width="2"/><text x="450" y="332" text-anchor="middle" font-weight="700">⑦ 画面にすぐ届ける</text><text x="450" y="358" text-anchor="middle" class="soft" font-size="13">ストリーミング</text>
+<rect x="650" y="300" width="230" height="80" rx="14" fill="var(--violet-wash)" stroke="var(--violet)" stroke-width="2"/><text x="765" y="332" text-anchor="middle" font-weight="700">⑧ 他サーバーへ配る</text><text x="765" y="358" text-anchor="middle" class="soft" font-size="13">配送キュー</text>
+</g></svg><figcaption>⑤まで終わると、投稿した人には「できました」が返る。⑥〜⑧は後ろで続けて行われる</figcaption></figure>
+<ol class="steps">
+<li><h3>書く</h3><p>投稿フォーム（<code>MkPostForm.vue</code>）で文章を書いて「ノート」を押す。</p><p class="where">packages/frontend</p></li>
+<li><h3>送る</h3><p>misskey-js が <code>POST /api/notes/create</code> にデータを送る。</p><p class="where">packages/misskey-js/src/api.ts</p></li>
+<li><h3>受付</h3><p>ログインしている本人か、送りすぎていないか、書き方が正しいかを確かめる。</p><p class="where">packages/backend/src/server/api/ApiCallService.ts</p></li>
+<li><h3>ノートを作る</h3><p>メンションやハッシュタグを取り出し、ID をつけてノートを組み立てる。</p><p class="where">packages/backend/src/core/NoteCreateService.ts</p></li>
+<li><h3>本棚にしまう</h3><p>PostgreSQL に保存。ここで投稿した人に返事が返る。</p></li>
+<li><h3>タイムラインに並べる</h3><p>フォロワーそれぞれの「ホームの並び」に、ノートの ID を足す。</p></li>
+<li><h3>画面にすぐ届ける</h3><p>いま画面を開いている人には、WebSocket でその場で届ける。</p></li>
+<li><h3>他サーバーへ配る</h3><p>ほかのサーバーのフォロワーには、配送キューに「届けて」と頼む。</p></li>
+</ol>
+</section>
+
+<section class="chap" id="api"><h2><span class="no">05</span>受付窓口</h2>
+<p>画面からのお願いは、すべて <code>/api/○○</code> という窓口に届きます。窓口は <b>400 個以上</b> あり、1つの窓口が1つのファイルになっています。</p>
+<div class="grid3">
+<div class="card accent-sea"><span class="tag">1</span><h3>だれ？</h3><p>トークンを見て、だれのお願いかを確かめる（<code>AuthenticateService</code>）。</p></div>
+<div class="card accent"><span class="tag">2</span><h3>多すぎない？</h3><p>短い時間に送りすぎていないか数える（<code>RateLimiterService</code>）。</p></div>
+<div class="card accent-gold"><span class="tag">3</span><h3>書き方OK？</h3><p>決められた形のデータかを Ajv でチェックする。</p></div>
+</div>
+<details class="code-ex"><summary class="lbl">窓口ファイルの形</summary><pre class="src"><span class="k">export const</span> meta = {
+  requireCredential: <span class="k">true</span>,       <span class="c">// ログインが必要</span>
+  limit: { duration: <span class="n">3600000</span>, max: <span class="n">300</span> }, <span class="c">// 1時間に300回まで</span>
+};
+
+<span class="k">export const</span> paramDef = {       <span class="c">// 受け取るデータの形</span>
+  type: <span class="s">'object'</span>,
+  properties: { text: { type: <span class="s">'string'</span>, nullable: <span class="k">true</span> } },
+};
+
+<span class="c">// 中身の処理は「係」に頼むだけ</span>
+<span class="k">super</span>(meta, paramDef, <span class="k">async</span> (ps, me) =&gt; {
+  <span class="k">return await this</span>.noteCreateService.create(me, ps);
+});</pre><p><code>endpoints/notes/create.ts</code> を短くしたものです。<code>meta</code> に決まりごと、<code>paramDef</code> にデータの形を書き、処理は係（サービス）に任せます。<code>paramDef</code> からは misskey-js の型も自動で作られます。</p></details>
+</section>
+
+<section class="chap" id="create"><h2><span class="no">06</span>ノートを作る</h2>
+<p>ノート作りの中心は <code>NoteCreateService</code> です。保存の前に、いろいろなチェックと準備をします。</p>
+<div class="grid2">
+<div class="card sea"><h3>保存の前</h3><ul><li>禁止ワードが入っていないか</li><li>返信先・リノート先を見てよいか（ブロックされていないか）</li><li>本文から <b>メンション・ハッシュタグ・絵文字</b> を取り出す（MFM を読む）</li><li>メンションが多すぎないか（ロールの上限）</li></ul></div>
+<div class="card"><h3>保存のあと（後ろで）</h3><ul><li>投稿数を数える、ハッシュタグを記録する</li><li>タイムライン・アンテナに入れる</li><li>メンションされた人に通知する</li><li>Webhook を呼ぶ、他サーバーへ配る</li></ul></div>
+</div>
+<details class="code-ex"><summary class="lbl">保存してから、後ろで続きをやる</summary><pre class="src"><span class="k">const</span> note = <span class="k">await this</span>.insertNote(user, data, tags, emojis, mentionedUsers);
+
+<span class="c">// 返事を先に返して、続きはあとで</span>
+setImmediate(<span class="s">'post created'</span>).then(
+  () =&gt; <span class="k">this</span>.postNoteCreated(note, user, data, ...),
+);
+
+<span class="k">return</span> note;</pre><p><code>insertNote</code> で保存したら、すぐ <code>return</code> します。タイムラインや配送などの重い仕事は <code>postNoteCreated</code> にまとめて後回しにするので、投稿した人を待たせません。</p></details>
+<div class="note sea"><strong>ID のつけ方</strong>ノートの ID には、作った時刻が入っています（aidx などの方式）。だから ID を比べるだけで、どちらが新しいかが分かります。</div>
+</section>
+
+<section class="chap" id="tl"><h2><span class="no">07</span>タイムライン</h2>
+<p>ホームを開くたびに「フォローしている全員のノートを集めて並べ直す」と、とても時間がかかります。そこで Misskey は、<b>ノートができたときに、配る先の並びに先に入れておく</b> 方法をとっています。これを <b>ファンアウト</b> と呼びます。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 300" role="img" aria-label="ノートIDがフォロワーごとのリストに入る図">
+<defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<rect x="30" y="110" width="170" height="80" rx="16" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2.5"/>
+<text x="115" y="145" text-anchor="middle" font-weight="700" font-size="18">新しいノート</text><text x="115" y="170" text-anchor="middle" class="m soft" font-size="14">id: 9xk2…</text>
+<path d="M205 140 C 300 140 300 60 380 60" stroke="var(--ink-soft)" stroke-width="2.5" fill="none" marker-end="url(#ah4)"/>
+<path d="M205 150 H 380" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah4)"/>
+<path d="M205 160 C 300 160 300 240 380 240" stroke="var(--ink-soft)" stroke-width="2.5" fill="none" marker-end="url(#ah4)"/>
+<g font-size="14">
+<text x="390" y="40" class="m" font-weight="600">homeTimeline:さくら</text>
+<rect x="390" y="48" width="64" height="26" rx="6" fill="var(--coral)"/><text x="422" y="66" text-anchor="middle" fill="#fff" class="m" style="fill:#fff">9xk2</text>
+<rect x="460" y="48" width="64" height="26" rx="6" fill="var(--line)"/><rect x="530" y="48" width="64" height="26" rx="6" fill="var(--line)"/><rect x="600" y="48" width="64" height="26" rx="6" fill="var(--line)"/>
+<text x="390" y="130" class="m" font-weight="600">homeTimeline:たろう</text>
+<rect x="390" y="138" width="64" height="26" rx="6" fill="var(--coral)"/><text x="422" y="156" text-anchor="middle" class="m" style="fill:#fff">9xk2</text>
+<rect x="460" y="138" width="64" height="26" rx="6" fill="var(--line)"/><rect x="530" y="138" width="64" height="26" rx="6" fill="var(--line)"/>
+<text x="390" y="220" class="m" font-weight="600">homeTimeline:あなた</text>
+<rect x="390" y="228" width="64" height="26" rx="6" fill="var(--coral)"/><text x="422" y="246" text-anchor="middle" class="m" style="fill:#fff">9xk2</text>
+<rect x="460" y="228" width="64" height="26" rx="6" fill="var(--line)"/><rect x="530" y="228" width="64" height="26" rx="6" fill="var(--line)"/><rect x="600" y="228" width="64" height="26" rx="6" fill="var(--line)"/><rect x="670" y="228" width="64" height="26" rx="6" fill="var(--line)"/>
+</g>
+<text x="760" y="150" class="mutedt" font-size="14">Redis に</text><text x="760" y="172" class="mutedt" font-size="14">人数分の列</text>
+</svg><figcaption>フォロワーごとの列（Redis のリスト）の先頭に、ノートの ID だけを足していく</figcaption></figure>
+<div class="grid2">
+<div class="card accent"><span class="tag">書くとき</span><h3>配る</h3><p><code>FanoutTimelineService</code> が、<code>homeTimeline:ユーザーID</code> のような列の先頭に ID を足す。列が長くなりすぎたら古い方を捨てる。</p></div>
+<div class="card accent-sea"><span class="tag">読むとき</span><h3>取り出す</h3><p><code>notes/timeline</code> は、まず Redis の列から ID を取り出し、中身を PostgreSQL から読む。列に足りないときは PostgreSQL から直接さがす（DB フォールバック）。</p></div>
+</div>
+</section>
+
+<section class="chap" id="stream"><h2><span class="no">08</span>すぐに届く</h2>
+<p>画面を開いたままにしていると、新しいノートが勝手に流れてきます。これは <b>ストリーミング</b> というしくみです。ブラウザとサーバーの間に <b>WebSocket</b> という「つなぎっぱなしの電話」をつないでおきます。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 250" role="img" aria-label="Redis の放送を経て WebSocket で画面に届く図">
+<defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<rect x="20" y="85" width="180" height="80" rx="16" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2.5"/>
+<text x="110" y="118" text-anchor="middle" font-weight="700" font-size="16">ノートを作った</text><text x="110" y="142" text-anchor="middle" class="m soft" font-size="12">GlobalEventService</text>
+<path d="M205 125 H 290" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah5)"/>
+<text x="248" y="112" text-anchor="middle" class="soft" font-size="12">放送する</text>
+<rect x="295" y="75" width="170" height="100" rx="16" fill="var(--coral-wash)" stroke="var(--coral)" stroke-width="2.5"/>
+<text x="380" y="118" text-anchor="middle" font-weight="700" font-size="17">Redis</text><text x="380" y="144" text-anchor="middle" class="soft" font-size="13">Pub/Sub（放送室）</text>
+<path d="M470 125 H 555" stroke="var(--ink-soft)" stroke-width="2.5" marker-end="url(#ah5)"/>
+<rect x="560" y="75" width="150" height="100" rx="16" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2.5"/>
+<text x="635" y="112" text-anchor="middle" font-weight="700" font-size="15">チャンネル</text><text x="635" y="136" text-anchor="middle" class="soft" font-size="12">見てよい人か</text><text x="635" y="156" text-anchor="middle" class="soft" font-size="12">ふるいにかける</text>
+<path d="M715 100 L 790 55" stroke="var(--coral)" stroke-width="2.5" marker-end="url(#ah5)"/>
+<path d="M715 125 H 790" stroke="var(--coral)" stroke-width="2.5" marker-end="url(#ah5)"/>
+<path d="M715 150 L 790 195" stroke="var(--coral)" stroke-width="2.5" marker-end="url(#ah5)"/>
+<rect x="795" y="30" width="90" height="46" rx="10" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="840" y="59" text-anchor="middle" font-size="13">画面</text>
+<rect x="795" y="102" width="90" height="46" rx="10" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="840" y="131" text-anchor="middle" font-size="13">画面</text>
+<rect x="795" y="174" width="90" height="46" rx="10" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="840" y="203" text-anchor="middle" font-size="13">画面</text>
+<text x="750" y="240" text-anchor="middle" class="mutedt" font-size="13">WebSocket（/streaming）</text>
+</svg><figcaption>サーバーが何台あっても、Redis の放送室を通すので、どのサーバーにつないだ人にも届く</figcaption></figure>
+<div class="point"><span>ポイント</span><ul><li>ノートができると <code>notesStream</code> という放送が Redis に流れる</li><li>WebSocket の中は「ホーム」「ローカル」などの <b>チャンネル</b> に分かれていて、それぞれが「この人に見せてよいか」を判断して送る</li><li>通知・リアクションなども同じしくみで届く</li></ul></div>
+</section>
+
+<section class="chap" id="fed"><h2><span class="no">09</span>ほかのサーバーへ</h2>
+<p>ほかのサーバーにいるフォロワーにノートを届けるには、そのサーバーの <b>受け取り口（inbox）</b> に手紙を送ります。手紙の書き方は <b>ActivityPub</b> という決まりにしたがいます。</p>
+<figure class="figure-box"><svg viewBox="0 0 900 270" role="img" aria-label="配送キューから相手のinboxへ署名つきで送る図">
+<defs><marker id="ah6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-soft)"/></marker></defs>
+<rect x="20" y="30" width="330" height="210" rx="18" fill="var(--sea-wash)" stroke="var(--sea)" stroke-width="2.5"/>
+<text x="185" y="62" text-anchor="middle" font-weight="700" font-size="17">わたしのサーバー</text>
+<rect x="45" y="85" width="130" height="60" rx="12" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="110" y="112" text-anchor="middle" font-size="14">ノート</text><text x="110" y="132" text-anchor="middle" class="soft" font-size="12">→ Create に包む</text>
+<path d="M178 115 H 205" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#ah6)"/>
+<rect x="210" y="85" width="120" height="60" rx="12" fill="var(--gold-wash)" stroke="var(--gold)" stroke-width="2"/><text x="270" y="112" text-anchor="middle" font-size="14">配送キュー</text><text x="270" y="132" text-anchor="middle" class="m soft" font-size="11">deliver</text>
+<rect x="45" y="165" width="285" height="55" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/><text x="187" y="198" text-anchor="middle" font-size="13" class="soft">失敗したら時間をあけてやり直す</text>
+<path d="M335 115 H 545" stroke="var(--violet)" stroke-width="3" marker-end="url(#ah6)"/>
+<rect x="400" y="88" width="80" height="54" rx="6" fill="var(--surface)" stroke="var(--violet)" stroke-width="2"/><path d="M400 90 L 440 118 L 480 90" fill="none" stroke="var(--violet)" stroke-width="2"/><circle cx="472" cy="134" r="9" fill="var(--coral)"/>
+<text x="440" y="170" text-anchor="middle" class="soft" font-size="12">HTTP 署名つき</text>
+<rect x="550" y="30" width="330" height="210" rx="18" fill="var(--violet-wash)" stroke="var(--violet)" stroke-width="2.5"/>
+<text x="715" y="62" text-anchor="middle" font-weight="700" font-size="17">相手のサーバー</text>
+<rect x="575" y="85" width="120" height="60" rx="12" fill="var(--surface)" stroke="var(--ink-soft)" stroke-width="2"/><text x="635" y="112" text-anchor="middle" font-size="14">受け取り口</text><text x="635" y="132" text-anchor="middle" class="m soft" font-size="11">POST /inbox</text>
+<path d="M698 115 H 725" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#ah6)"/>
+<rect x="730" y="85" width="130" height="60" rx="12" fill="var(--gold-wash)" stroke="var(--gold)" stroke-width="2"/><text x="795" y="112" text-anchor="middle" font-size="14">受信キュー</text><text x="795" y="132" text-anchor="middle" class="m soft" font-size="11">inbox</text>
+<rect x="575" y="165" width="285" height="55" rx="12" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/><text x="717" y="190" text-anchor="middle" font-size="13" class="soft">署名を確かめてから</text><text x="717" y="210" text-anchor="middle" font-size="13" class="soft">ノートとして保存</text>
+</svg><figcaption>送る側も受け取る側も、すぐには処理せず、いったんキューに入れてから順番にこなす</figcaption></figure>
+<div class="grid2">
+<div class="card accent-violet"><span class="tag">送る</span><h3>配送</h3><p>ノートを <code>Create</code> という「活動」に包み、フォロワーのいるサーバーの inbox に送る。相手が多いと時間がかかるので <b>配送キュー</b> に入れて少しずつ送る。</p></div>
+<div class="card accent-gold"><span class="tag">受け取る</span><h3>受信</h3><p><code>/inbox</code> に届いた手紙は <b>受信キュー</b> へ。<b>HTTP 署名</b>で「本当にその人からの手紙か」を確かめてから中身を読む。</p></div>
+</div>
+<div class="note"><strong>相手を探すとき</strong><code>@alice@example.com</code> のような名前から相手を見つけるときは、WebFinger（<code>/.well-known/webfinger</code>）で問い合わせます。</div>
+</section>
+
+<section class="chap" id="queue"><h2><span class="no">10</span>あとでやる仕事</h2>
+<p>時間のかかる仕事や、失敗したらやり直したい仕事は、<b>ジョブキュー</b>（BullMQ）に入れておき、別の係が順番にこなします。キューの中身は Redis にしまわれます。</p>
+<div class="tw"><table><thead><tr><th>キュー</th><th>やること</th></tr></thead><tbody>
+<tr><td class="k"><code>deliver</code></td><td>ほかのサーバーへ ActivityPub の手紙を送る</td></tr>
+<tr><td class="k"><code>inbox</code></td><td>ほかのサーバーから届いた手紙を読む</td></tr>
+<tr><td class="k"><code>db</code></td><td>データの書き出し・読みこみ、アカウント削除など重い作業</td></tr>
+<tr><td class="k"><code>relationship</code></td><td>フォロー・ブロックなどの関係の変更</td></tr>
+<tr><td class="k"><code>objectStorage</code></td><td>ファイル置き場のファイルを消す</td></tr>
+<tr><td class="k"><code>endedPollNotification</code></td><td>アンケートが終わったら知らせる</td></tr>
+<tr><td class="k"><code>postScheduledNote</code></td><td>予約しておいたノートを時間どおりに出す</td></tr>
+<tr><td class="k"><code>userWebhookDeliver</code> / <code>systemWebhookDeliver</code></td><td>Webhook を呼ぶ</td></tr>
+<tr><td class="k"><code>system</code></td><td>チャートの集計や掃除など、定期的な作業</td></tr>
+</tbody></table></div>
+<p class="prose" style="font-size:14.5px;color:var(--ink-soft)">キューの名前は <code>packages/backend/src/queue/const.ts</code>、それぞれの係は <code>packages/backend/src/queue/processors/</code> にあります。</p>
+</section>
+
+<section class="chap" id="tools"><h2><span class="no">11</span>使っている道具</h2>
+<div class="tw"><table><thead><tr><th>道具</th><th>どこで</th><th>何をする</th></tr></thead><tbody>
+<tr><td class="k">Vue 3.5</td><td>frontend</td><td>画面を部品（コンポーネント）で組み立てる</td></tr>
+<tr><td class="k">Vite 8</td><td>frontend</td><td>画面のファイルをまとめて、ブラウザ向けにする</td></tr>
+<tr><td class="k">NestJS 12</td><td>backend</td><td>係（サービス）どうしを組み合わせる（DI）</td></tr>
+<tr><td class="k">Fastify 5</td><td>backend</td><td>HTTP の受付</td></tr>
+<tr><td class="k">TypeORM 1.1</td><td>backend</td><td>PostgreSQL の読み書き</td></tr>
+<tr><td class="k">ioredis 5</td><td>backend</td><td>Redis とのやりとり</td></tr>
+<tr><td class="k">BullMQ 6</td><td>backend</td><td>ジョブキュー</td></tr>
+<tr><td class="k">mfm-js 0.27</td><td>両方</td><td>MFM（Misskey の文字飾り）を読む</td></tr>
+<tr><td class="k">sharp 0.35</td><td>backend</td><td>画像を小さくしたり、形式を変えたりする</td></tr>
+<tr><td class="k">Ajv</td><td>backend</td><td>API に届いたデータの形をチェックする</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="chap" id="words"><h2><span class="no">12</span>ことば</h2>
+<dl class="words">
+<div><dt>ノート</dt><dd>Misskey の投稿。ほかの SNS の「ポスト」にあたる。</dd></div>
+<div><dt>サーバー（インスタンス）</dt><dd>Misskey が動いている1台1台。それぞれに管理人がいる。</dd></div>
+<div><dt>ActivityPub</dt><dd>分散型 SNS どうしが話すための共通のことば。W3C が決めた。</dd></div>
+<div><dt>API</dt><dd>画面がサーバーにお願いをするための窓口。</dd></div>
+<div><dt>WebSocket</dt><dd>ブラウザとサーバーをつなぎっぱなしにして、すぐにデータを送れる方法。</dd></div>
+<div><dt>ファンアウト</dt><dd>ノートができたときに、配る先の列に先に入れておくやり方。</dd></div>
+<div><dt>ジョブキュー</dt><dd>あとでやる仕事を並べておく列。失敗したらやり直せる。</dd></div>
+<div><dt>inbox</dt><dd>ActivityPub の手紙を受け取る口。</dd></div>
+<div><dt>MFM</dt><dd>Misskey Flavored Markdown。文字を大きくしたり回したりできる飾り。</dd></div>
+<div><dt>モノレポ</dt><dd>いくつかのパッケージを1つのリポジトリにまとめて入れる形。</dd></div>
+</dl>
+</section>
+
+</main></div>
+
+<footer><div class="wrap">
+<p>この資料は Misskey の公式資料ではありません。オープンソースで公開されている <a href="https://github.com/misskey-dev/misskey">misskey-dev/misskey</a>（このページはフォーク <a href="https://github.com/Syogo-Suganoya/misskey">Syogo-Suganoya/misskey</a> の develop ブランチ）のソースコードを読んでまとめたものです。内容の正確さは保証できず、最新のコードと違う場合があります。</p>
+</div></footer>
+
+<script>
+(() => {
+  const links = [...document.querySelectorAll('.side a[href^="#"]')];
+  if (!links.length) return;
+  const secs = links.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  const set = () => {
+    let cur = 0;
+    secs.forEach((s, i) => { if (s && s.getBoundingClientRect().top < 140) cur = i; });
+    links.forEach((a, i) => a.classList.toggle('active', i === cur));
+  };
+  addEventListener('scroll', set, { passive: true }); set();
+})();
+</script>
+</body>
+</html>
