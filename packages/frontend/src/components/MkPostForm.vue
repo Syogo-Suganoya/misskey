@@ -350,35 +350,40 @@ watch(visibleUsers, () => {
 	deep: true,
 });
 
-if (props.mention) {
-	text.value = props.mention.host ? `@${props.mention.username}@${toASCII(props.mention.host)}` : `@${props.mention.username}`;
-	text.value += ' ';
-}
+// 宛先や返信先に応じたメンションを本文に入れる（「リセット」したときにも入れ直す）
+function insertInitialMentions() {
+	if (props.mention) {
+		text.value = props.mention.host ? `@${props.mention.username}@${toASCII(props.mention.host)}` : `@${props.mention.username}`;
+		text.value += ' ';
+	}
 
-if (replyTargetNote.value && (replyTargetNote.value.user.username !== $i.username || (replyTargetNote.value.user.host != null && replyTargetNote.value.user.host !== host))) {
-	text.value = `@${replyTargetNote.value.user.username}${replyTargetNote.value.user.host != null ? '@' + toASCII(replyTargetNote.value.user.host) : ''} `;
-}
+	if (replyTargetNote.value && (replyTargetNote.value.user.username !== $i.username || (replyTargetNote.value.user.host != null && replyTargetNote.value.user.host !== host))) {
+		text.value = `@${replyTargetNote.value.user.username}${replyTargetNote.value.user.host != null ? '@' + toASCII(replyTargetNote.value.user.host) : ''} `;
+	}
 
-if (replyTargetNote.value && replyTargetNote.value.text != null) {
-	const ast = mfm.parse(replyTargetNote.value.text);
-	const otherHost = replyTargetNote.value.user.host;
+	if (replyTargetNote.value && replyTargetNote.value.text != null) {
+		const ast = mfm.parse(replyTargetNote.value.text);
+		const otherHost = replyTargetNote.value.user.host;
 
-	for (const x of extractMentions(ast)) {
-		const mention = x.host ?
-			`@${x.username}@${toASCII(x.host)}` :
-			(otherHost == null || otherHost === host) ?
-				`@${x.username}` :
-				`@${x.username}@${toASCII(otherHost)}`;
+		for (const x of extractMentions(ast)) {
+			const mention = x.host ?
+				`@${x.username}@${toASCII(x.host)}` :
+				(otherHost == null || otherHost === host) ?
+					`@${x.username}` :
+					`@${x.username}@${toASCII(otherHost)}`;
 
-		// 自分は除外
-		if ($i.username === x.username && (x.host == null || x.host === host)) continue;
+			// 自分は除外
+			if ($i.username === x.username && (x.host == null || x.host === host)) continue;
 
-		// 重複は除外
-		if (text.value.includes(`${mention} `)) continue;
+			// 重複は除外
+			if (text.value.includes(`${mention} `)) continue;
 
-		text.value += `${mention} `;
+			text.value += `${mention} `;
+		}
 	}
 }
+
+insertInitialMentions();
 
 if ($i.isSilenced && visibility.value === 'public') {
 	visibility.value = 'home';
@@ -685,6 +690,7 @@ function showOtherSettings() {
 			});
 			if (canceled) return;
 			clear();
+			insertInitialMentions();
 		},
 	}] satisfies MenuItem[];
 
