@@ -9,6 +9,7 @@ import { claimAchievement } from './achievements.js';
 import type { Ref, ShallowRef } from 'vue';
 import type { MenuItem } from '@/types/menu.js';
 import { $i } from '@/i.js';
+import { updateCurrentAccount } from '@/accounts.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import * as os from '@/os.js';
@@ -255,6 +256,9 @@ export function getNoteMenu(props: {
 			'72dab508-c64d-498f-8740-a8eec1ba385a': {
 				text: i18n.ts.pinLimitExceeded,
 			},
+		}).then((res) => {
+			// メニューの「ピン留め」「ピン留め解除」は $i.pinnedNoteIds で切り替えているので、すぐ反映されるよう更新する
+			updateCurrentAccount({ pinnedNoteIds: res.pinnedNoteIds });
 		});
 	}
 
