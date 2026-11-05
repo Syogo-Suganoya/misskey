@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:required="required"
 			:readonly="readonly"
 			@input="onInput"
+			@click="onClick"
 		>
 	</div>
 	<div :class="$style.caption"><slot name="caption"></slot></div>
@@ -43,6 +44,11 @@ const inputEl = useTemplateRef('inputEl');
 
 const onInput = () => {
 	emit('update:modelValue', v.value ?? '');
+};
+
+// type="color" の input には readonly 属性が効かず、色の選択画面が開いてしまうため止める
+const onClick = (ev: MouseEvent) => {
+	if (props.readonly) ev.preventDefault();
 };
 </script>
 
