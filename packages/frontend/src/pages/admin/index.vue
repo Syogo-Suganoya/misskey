@@ -14,6 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<div class="_gaps_s">
 					<MkInfo v-if="thereIsUnresolvedAbuseReport" warn>{{ i18n.ts.thereIsUnresolvedAbuseReportWarning }} <MkA to="/admin/abuses" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
+					<MkInfo v-if="thereIsPausedJobQueue" warn>{{ i18n.ts.thereIsPausedJobQueueWarning }} <MkA to="/admin/job-queue" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="noMaintainerInformation" warn>{{ i18n.ts.noMaintainerInformationWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noInquiryUrl" warn>{{ i18n.ts.noInquiryUrlWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noBotProtection" warn>{{ i18n.ts.noBotProtectionWarning }} <MkA to="/admin/security" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
@@ -71,6 +72,7 @@ const noBotProtection = computed(() => !instance.disableRegistration && !instanc
 const noEmailServer = computed(() => !instance.enableEmail);
 const noInquiryUrl = computed(() => isEmpty(instance.inquiryUrl));
 const thereIsUnresolvedAbuseReport = ref(false);
+const thereIsPausedJobQueue = ref(false);
 const currentPage = computed(() => router.currentRef.value.child);
 
 misskeyApi('admin/abuse-user-reports', {
@@ -78,6 +80,11 @@ misskeyApi('admin/abuse-user-reports', {
 	limit: 1,
 }).then(reports => {
 	if (reports.length > 0) thereIsUnresolvedAbuseReport.value = true;
+});
+
+// 一時停止したまま再開し忘れることがあるため
+misskeyApi('admin/queue/queues').then(queues => {
+	if (queues.some(queue => queue.isPaused)) thereIsPausedJobQueue.value = true;
 });
 
 const NARROW_THRESHOLD = 600;
