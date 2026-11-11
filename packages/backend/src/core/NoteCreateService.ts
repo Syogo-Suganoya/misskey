@@ -895,7 +895,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 			nm.notify();
 
 			//#region AP deliver
-			if (!data.localOnly && this.userEntityService.isLocalUser(user)) {
+			// ダイレクトのリノートは Announce として表現できない (renderAnnounce が例外を投げる) ため配送しない
+			const isSpecifiedRenote = this.isRenote(data) && !this.isQuote(data) && note.visibility === 'specified';
+			if (!data.localOnly && this.userEntityService.isLocalUser(user) && !isSpecifiedRenote) {
 				(async () => {
 					const noteActivity = await this.renderNoteOrRenoteActivity(data, note);
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);

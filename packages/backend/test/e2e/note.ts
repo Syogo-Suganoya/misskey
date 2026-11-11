@@ -184,6 +184,30 @@ describe('Note', () => {
 		assert.strictEqual(deleteRes.status, 204);
 	});
 
+	test('visibility: specifiedでrenoteしたものを削除できる', async () => {
+		const createRes = await api('notes/create', {
+			text: 'test',
+		}, alice);
+
+		assert.strictEqual(createRes.status, 200);
+
+		const renoteId = createRes.body.createdNote.id;
+		const renoteRes = await api('notes/create', {
+			visibility: 'specified',
+			renoteId,
+		}, alice);
+
+		assert.strictEqual(renoteRes.status, 200);
+		assert.strictEqual(renoteRes.body.createdNote.visibility, 'specified');
+
+		const deleteRes = await api('notes/delete', {
+			noteId: renoteRes.body.createdNote.id,
+		}, alice);
+
+		assert.strictEqual(deleteRes.status, 204);
+		assert.strictEqual(await Notes.findOneBy({ id: renoteRes.body.createdNote.id }), null);
+	});
+
 	test('visibility: followersなノートに対してフォロワーはリプライできる', async () => {
 		await api('following/create', {
 			userId: alice.id,
