@@ -434,6 +434,7 @@ function watchForDraft() {
 	watch(poll, () => saveDraft());
 	watch(files, () => saveDraft(), { deep: true });
 	watch(visibility, () => saveDraft());
+	watch(visibleUsers, () => saveDraft(), { deep: true });
 	watch(localOnly, () => saveDraft());
 	watch(quoteId, () => saveDraft());
 	watch(reactionAcceptance, () => saveDraft());
