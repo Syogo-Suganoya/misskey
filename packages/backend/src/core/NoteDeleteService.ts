@@ -83,11 +83,15 @@ export class NoteDeleteService {
 					});
 				}
 
-				const content = this.apRendererService.addContext(renote
-					? this.apRendererService.renderUndo(this.apRendererService.renderAnnounce(renote.uri ?? `${this.config.url}/notes/${renote.id}`, note), user)
-					: this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${note.id}`), user));
+				// ダイレクトのリノートは Announce として表現できず作成時にも配送していないため、取り消しも配送しない
+				// (renderAnnounce が例外を投げ、ノートが削除されないまま終わってしまう)
+				if (!(renote && note.visibility === 'specified')) {
+					const content = this.apRendererService.addContext(renote
+						? this.apRendererService.renderUndo(this.apRendererService.renderAnnounce(renote.uri ?? `${this.config.url}/notes/${renote.id}`, note), user)
+						: this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${note.id}`), user));
 
-				this.deliverToConcerned(user, note, content);
+					this.deliverToConcerned(user, note, content);
+				}
 			}
 			//#endregion
 
