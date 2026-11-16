@@ -17,15 +17,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #label>{{ i18n.ts._role.description }}</template>
 	</MkTextarea>
 
-	<MkColorInput v-model="role.color">
+	<MkColorInput v-model="role.color" :readonly="readonly">
 		<template #label>{{ i18n.ts.color }}</template>
 	</MkColorInput>
 
-	<MkInput v-model="role.iconUrl" type="url">
+	<MkInput v-model="role.iconUrl" type="url" :readonly="readonly">
 		<template #label>{{ i18n.ts._role.iconUrl }}</template>
 	</MkInput>
 
-	<MkInput v-model="role.displayOrder" type="number">
+	<MkInput v-model="role.displayOrder" type="number" :readonly="readonly">
 		<template #label>{{ i18n.ts._role.displayOrder }}</template>
 		<template #caption>{{ i18n.ts._role.descriptionOfDisplayOrder }}</template>
 	</MkInput>
@@ -43,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkFolder v-if="role.target === 'conditional'" defaultOpen>
 		<template #label>{{ i18n.ts._role.condition }}</template>
 		<div class="_gaps">
-			<RolesEditorFormula v-model="role.condFormula"/>
+			<RolesEditorFormula v-model="role.condFormula" :readonly="readonly"/>
 		</div>
 	</MkFolder>
 

@@ -6,12 +6,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div class="_gaps">
 	<div :class="$style.header">
-		<MkSelect v-model="typeModelForMkSelect" :items="typeDef" :class="$style.typeSelect">
+		<MkSelect v-model="typeModelForMkSelect" :items="typeDef" :class="$style.typeSelect" :readonly="readonly">
 		</MkSelect>
-		<button v-if="draggable" class="_button" :class="$style.dragHandle" :draggable="true" @dragstart.stop="dragStartCallback">
+		<button v-if="draggable && !readonly" class="_button" :class="$style.dragHandle" :draggable="true" @dragstart.stop="dragStartCallback">
 			<i class="ti ti-menu-2"></i>
 		</button>
-		<button v-if="draggable" class="_button" :class="$style.remove" @click="removeSelf">
+		<button v-if="draggable && !readonly" class="_button" :class="$style.remove" @click="removeSelf">
 			<i class="ti ti-x"></i>
 		</button>
 	</div>
@@ -31,6 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<RolesEditorFormula
 						:modelValue="item"
 						:dragStartCallback="dragStart"
+						:readonly="readonly"
 						draggable
 						@update:modelValue="updated => childValuesItemUpdated(updated)"
 						@remove="removeChildItem(item.id)"
@@ -38,21 +39,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</template>
 		</MkDraggable>
-		<MkButton rounded style="margin: 0 auto;" @click="addChildValue"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
+		<MkButton v-if="!readonly" rounded style="margin: 0 auto;" @click="addChildValue"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
 	</div>
 
 	<div v-else-if="v.type === 'not'" :class="$style.item">
-		<RolesEditorFormula v-model="v.value"/>
+		<RolesEditorFormula v-model="v.value" :readonly="readonly"/>
 	</div>
 
-	<MkInput v-else-if="v.type === 'createdLessThan' || v.type === 'createdMoreThan'" v-model="v.sec" type="number">
+	<MkInput v-else-if="v.type === 'createdLessThan' || v.type === 'createdMoreThan'" v-model="v.sec" type="number" :readonly="readonly">
 		<template #suffix>sec</template>
 	</MkInput>
 
-	<MkInput v-else-if="v.type === 'followersLessThanOrEq' || v.type === 'followersMoreThanOrEq' || v.type === 'followingLessThanOrEq' || v.type === 'followingMoreThanOrEq' || v.type === 'notesLessThanOrEq' || v.type === 'notesMoreThanOrEq'" v-model="v.value" type="number">
+	<MkInput v-else-if="v.type === 'followersLessThanOrEq' || v.type === 'followersMoreThanOrEq' || v.type === 'followingLessThanOrEq' || v.type === 'followingMoreThanOrEq' || v.type === 'notesLessThanOrEq' || v.type === 'notesMoreThanOrEq'" v-model="v.value" type="number" :readonly="readonly">
 	</MkInput>
 
-	<MkSelect v-else-if="v.type === 'roleAssignedTo'" v-model="v.roleId" :items="assignedToDef">
+	<MkSelect v-else-if="v.type === 'roleAssignedTo'" v-model="v.roleId" :items="assignedToDef" :readonly="readonly">
 	</MkSelect>
 </div>
 </template>
@@ -79,6 +80,7 @@ const props = defineProps<{
 	modelValue: Misskey.entities.Role['condFormula'];
 	draggable?: boolean;
 	dragStartCallback?: (ev: DragEvent) => void;
+	readonly?: boolean;
 }>();
 
 const v = ref(deepClone(props.modelValue));
