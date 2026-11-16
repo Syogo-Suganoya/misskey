@@ -3949,6 +3949,10 @@ export interface Locale extends ILocale {
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
+     * 一時停止中のジョブキューがあります。
+     */
+    "thereIsPausedJobQueueWarning": string;
+    /**
      * 推奨
      */
     "recommended": string;
